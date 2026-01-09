@@ -1,33 +1,21 @@
 const express = require("express")
 const router = express.Router()
 const Todo = require("../models/todo")
-const todoArr = [
-    {
-        id: 1,
-        task: "Create api",
-        tags: ["nodejs", "javasript"],
-        status: "todo"
-    },
-    {
-        id: 2,
-        task: "Create api",
-        tags: ["nodejs"],
-        status: "pending"
-    },
-    {
-        id: 3,
-        task: "Create api",
-        tags: ["nodejs"],
-        status: "done"
-    },
-]
 
-router.get('/', (req, res) => {
-    res.send('task is created');
+
+router.get('/todos', async (req, res) => {
+    const todos = await Todo.find();// fetch all todos from mongodb
+    //const todos = await Todo.find({ tags: "React" });// fetch react tagged todos from mongodb
+
+    //  const todos = await Todo.find({ tags: "HTML", status: "todo" });// fetch html tagged todos from mongodb
+    //const todos = await Todo.countDocuments({ status: "Done" });// fetch count of done todos from mongodb
+    //const todos = await Todo.find({ task: /\bCreate\b/i });// fetch todos from mongodb with task containing 'create' word
+
+    console.log(todos);
+    res.json(todos);
+
 });
-router.get('/todos', (req, res) => {
-    res.send(todoArr);
-});
+
 router.get('/todos/:id', (req, res) => {
 
     const todoId = parseInt(req.params.id);
@@ -61,41 +49,33 @@ router.post('/todos', async (req, res) => {
 
 
 
-router.put('/todos/:id', (req, res) => {
+router.put('/todos/:id', async (req, res) => {
 
-    const id = parseInt(req.params.id);
-    const { task, tags, status } = req.body;
+    const id = req.params.id;
+    const { task } = req.body;
+    // For update one filed
+    // const updatedTodo = await Todo.findByIdAndUpdate(
+    //     id,
+    //     { $set: { task: task } },
+    //     { new: true, runValidators: true }
+    // );
 
-    const todoIndex = todoArr.findIndex((t) => t.id === id)
-    if (todoIndex === -1) {
-        return res.status(400).json({ message: "Todo not found " })
-    }
+    //for update multiple fields
+    const updatedTodo = await Todo.updateMany(
+        { status: "todo" },
+        { $set: { status: "done" } },
 
-    if (task) {
-        todoArr[todoIndex].task = task
-    }
-    if (tags) {
-        todoArr[todoIndex].tags = tags
-    }
-    if (status) {
-        todoArr[todoIndex].status = status
-    }
+    );
 
-    res.json(todoArr[todoIndex]);
+    res.json(updatedTodo);
 })
 
 
 
-router.delete('/todos/:id', (req, res) => {
-    const id = parseInt(req.params.id);
-
-    const todoIndex = todoArr.findIndex((t) => t.id === id)
-    if (todoIndex === -1) {
-        return res.status(400).json({ message: "Todo not found " })
-    }
-
-    todoArr.slice(todoIndex, 1)
-    res.json({ message: 'Todo deleted sucessfully' })
+router.delete('/todos/:id', async (req, res) => {
+    const id = req.params.id;
+    const result = await Todo.deleteOne({ _id: id })
+    res.json({ result: result, message: 'Todo deleted successfully' })
 })
 
 module.exports = router
