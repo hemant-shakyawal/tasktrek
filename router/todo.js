@@ -1,5 +1,6 @@
 const express = require("express")
 const router = express.Router()
+const Todo = require("../models/todo")
 const todoArr = [
     {
         id: 1,
@@ -35,19 +36,26 @@ router.get('/todos/:id', (req, res) => {
 });
 
 
-router.post('/todos', (req, res) => {
+router.post('/todos', async (req, res) => {
     const todo = req.body;
-    const newTodo = {
-        id: todoArr[todoArr.length - 1].id + 1,
+    // const newTodo = {
+    //     id: todoArr[todoArr.length - 1].id + 1,
+    //     task: todo.task,
+    //     tags: todo.tags,
+    //     status: todo.status
+
+    // }
+
+    // todoArr.push(newTodo);
+
+    const newTodo = new Todo({
         task: todo.task,
         tags: todo.tags,
         status: todo.status
-
-    }
-
-    todoArr.push(newTodo);
-    console.log(newTodo);
-    res.json(newTodo)
+    })
+    const storedTodo = await newTodo.save();
+    console.log(storedTodo);
+    res.status(201).json(storedTodo);
 
 })
 
